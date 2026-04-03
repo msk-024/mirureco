@@ -1,0 +1,13 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --color-beige: #F5F5DC;
+  --color-orange: #FF8C00;
+}
+
+body {
+  background-color: var(--color-beige);
+  color: #333;
+}

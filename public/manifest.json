@@ -1,0 +1,9 @@
+{
+  "name": "ミルレコ",
+  "short_name": "ミルレコ",
+  "description": "申し送り音声入力AI",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#F5F5DC",
+  "theme_color": "#FF8C00"
+}
