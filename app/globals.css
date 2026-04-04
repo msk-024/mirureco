@@ -11,3 +11,22 @@ body {
   background-color: var(--color-beige);
   color: #333;
 }
+
+/* ── モバイルタップ最適化 ────────────────────────────
+ * 1. タップ時のハイライト（青い半透明）を除去
+ * 2. touch-action: manipulation でダブルタップズームを防止し
+ *    300ms の遅延なしに即座に反応させる
+ * ─────────────────────────────────────────────────── */
+button,
+a,
+[role="tab"] {
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+/* ── Safe Area（iPhone ノッチ・ホームバー対応）─────────
+ * viewport-fit=cover と組み合わせて使用
+ * ─────────────────────────────────────────────────── */
+.pb-safe {
+  padding-bottom: max(3rem, env(safe-area-inset-bottom));
+}

@@ -74,11 +74,11 @@ export function ReportCard({ report, onDelete }: ReportCardProps) {
           </p>
         </button>
 
-        <div className="flex items-center gap-1 shrink-0 pt-0.5">
+        <div className="flex items-center gap-0.5 shrink-0">
           {!isPending && (
             <button
               onClick={() => setExpanded(v => !v)}
-              className="text-gray-300 hover:text-gray-500"
+              className="p-2.5 -m-1 text-gray-300 hover:text-gray-500 active:text-gray-600"
               aria-label={expanded ? '閉じる' : '展開'}
             >
               {expanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
@@ -86,24 +86,25 @@ export function ReportCard({ report, onDelete }: ReportCardProps) {
           )}
           {onDelete && (
             confirming ? (
-              <>
+              <div className="flex items-center gap-1">
                 <button
                   onClick={handleDelete}
-                  className="text-xs text-red-600 font-medium hover:underline"
+                  className="px-3 py-1.5 text-xs font-semibold text-white bg-red-500 rounded-lg active:bg-red-600"
                 >
-                  削除
+                  削除する
                 </button>
                 <button
                   onClick={() => setConfirming(false)}
-                  className="text-xs text-gray-400 hover:underline ml-1"
+                  className="p-2 text-gray-400 hover:text-gray-600"
+                  aria-label="キャンセル"
                 >
-                  ×
+                  <span className="text-sm leading-none">✕</span>
                 </button>
-              </>
+              </div>
             ) : (
               <button
                 onClick={handleDelete}
-                className="text-gray-300 hover:text-red-400 transition-colors"
+                className="p-2.5 -m-1 text-gray-300 hover:text-red-400 active:text-red-500 transition-colors"
                 aria-label="削除"
               >
                 <Trash2 className="w-4 h-4" />

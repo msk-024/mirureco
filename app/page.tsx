@@ -10,7 +10,7 @@ import {
   addReport, addPendingReport, updateReportCompleted, getPendingReports,
   getAllReports, type SbarContent, type Report,
 } from '@/lib/db';
-import { SBAR_KEYS, SBAR_LABELS, SBAR_SHORT_LABELS, sbarToText } from '@/lib/sbar';
+import { SBAR_KEYS, SBAR_LABELS, sbarToText } from '@/lib/sbar';
 import { CopyButton } from '@/components/CopyButton';
 
 // ---- 型 ----
@@ -155,6 +155,7 @@ export default function HomePage() {
   const [syncNotice, setSyncNotice] = useState('');
   const [bars, setBars]             = useState<number[]>(Array(BAR_COUNT).fill(0));
 
+  const resultRef        = useRef<HTMLElement>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef        = useRef<Blob[]>([]);
   const analyserRef      = useRef<AnalyserNode | null>(null);
@@ -162,6 +163,14 @@ export default function HomePage() {
   const animFrameRef     = useRef<number>(0);
   // retryPending の多重呼び出しを防ぐフラグ
   const isSyncingRef     = useRef(false);
+
+  // ---- 解析完了後、結果カードへ自動スクロール ----
+  useEffect(() => {
+    if (!result) return;
+    requestAnimationFrame(() => {
+      resultRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  }, [result]);
 
   const pendingCount = history.filter(r => r.status === 'pending').length;
 
@@ -369,7 +378,7 @@ export default function HomePage() {
   const canAnalyze  = appState === 'idle' && inputText.trim().length > 0;
 
   return (
-    <main className="min-h-screen bg-[#F5F5DC] px-4 pt-6 pb-12 flex flex-col items-center gap-5">
+    <main className="min-h-screen bg-[#F5F5DC] px-4 pt-6 pb-safe flex flex-col items-center gap-5">
 
       {/* ヘッダー */}
       <header className="w-full max-w-md flex items-center justify-between">
@@ -495,7 +504,7 @@ export default function HomePage() {
                 onChange={e => setInputText(e.target.value)}
                 placeholder="例：患者A氏の血圧が150/90に上昇。頭痛を訴えています。既往歴に高血圧あり、降圧剤を服用中。主治医への報告が必要です。"
                 rows={5}
-                className="w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-800 placeholder-gray-300 focus:outline-none focus:border-[#FF8C00] resize-none transition-colors"
+                className="w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-base text-gray-800 placeholder-gray-300 focus:outline-none focus:border-[#FF8C00] resize-none transition-colors"
               />
               {appState === 'error' && (
                 <div className="flex items-center justify-between">
@@ -526,7 +535,7 @@ export default function HomePage() {
 
       {/* ── SBAR結果カード ── */}
       {result && (
-        <section className="w-full max-w-md space-y-4">
+        <section ref={resultRef} className="w-full max-w-md space-y-4">
           <p className="text-green-600 text-sm font-medium flex items-center gap-1.5">
             <CheckCircle className="w-4 h-4" />
             保存しました

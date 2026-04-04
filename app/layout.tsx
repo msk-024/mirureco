@@ -12,6 +12,7 @@ export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
   maximumScale: 1,
+  viewportFit: 'cover', // iPhone ノッチ・ホームバーの safe-area-inset を有効化
 };
 
 export default function RootLayout({
