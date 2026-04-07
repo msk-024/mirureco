@@ -49,30 +49,21 @@ export function ReportCard({ report, onDelete }: ReportCardProps) {
   const isPending = report.status === 'pending';
 
   return (
-    <div className="bg-white rounded-xl shadow-sm p-3 space-y-2">
-      <div className="flex items-start justify-between gap-2">
-        <button
-          onClick={() => !isPending && setExpanded(v => !v)}
-          className="flex-1 text-left"
-          disabled={isPending}
-        >
-          <div className="flex items-center gap-2">
-            <p className="text-xs text-gray-400">
-              {new Date(report.createdAt).toLocaleString('ja-JP')}
-            </p>
-            {isPending && (
-              <span className="text-xs text-yellow-600 font-medium bg-yellow-50 px-1.5 py-0.5 rounded flex items-center gap-1">
-                <Loader2 className="w-3 h-3 animate-spin" />
-                解析中...
-              </span>
-            )}
-          </div>
-          <p className="text-sm text-gray-700 mt-0.5 leading-snug">
-            {report.shortSummary || (
-              <span className="text-gray-400 italic">電波復帰時に自動解析されます</span>
-            )}
+    <div className="bg-white rounded-xl shadow-sm p-3 space-y-1.5">
+
+      {/* 上段：日時 + ステータス + アクションボタン */}
+      <div className="flex items-center justify-between gap-2">
+        <div className="flex items-center gap-2 min-w-0">
+          <p className="text-xs text-gray-400 shrink-0">
+            {new Date(report.createdAt).toLocaleString('ja-JP')}
           </p>
-        </button>
+          {isPending && (
+            <span className="text-xs text-yellow-600 font-medium bg-yellow-50 px-1.5 py-0.5 rounded flex items-center gap-1">
+              <Loader2 className="w-3 h-3 animate-spin" />
+              解析中...
+            </span>
+          )}
+        </div>
 
         <div className="flex items-center gap-0.5 shrink-0">
           {!isPending && (
@@ -113,6 +104,19 @@ export function ReportCard({ report, onDelete }: ReportCardProps) {
           )}
         </div>
       </div>
+
+      {/* 下段：申し送りテキスト（ボタンの影響を受けない独立した行） */}
+      <button
+        onClick={() => !isPending && setExpanded(v => !v)}
+        className="w-full text-left"
+        disabled={isPending}
+      >
+        <p className="text-sm text-gray-700 leading-snug">
+          {report.shortSummary || (
+            <span className="text-gray-400 italic">電波復帰時に自動解析されます</span>
+          )}
+        </p>
+      </button>
 
       {/* sbar が non-null に絞り込まれた状態でサブコンポーネントに渡す（! アサーション不要） */}
       {expanded && !isPending && report.sbar && (
