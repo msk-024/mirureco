@@ -21,17 +21,6 @@ const RequestBodySchema = z.discriminatedUnion('type', [
   }),
 ]);
 
-/** Gemini からのレスポンス形式を検証 */
-const GeminiResponseSchema = z.object({
-  sbar: z.object({
-    S: z.string().min(1),
-    B: z.string().min(1),
-    A: z.string().min(1),
-    R: z.string().min(1),
-  }),
-  shortSummary: z.string().min(1),
-});
-
 // ---- プロンプト ----
 
 const SYSTEM_PROMPT = `あなたは医療・介護現場の申し送りを整理するAIです。
@@ -100,44 +89,43 @@ export async function POST(req: NextRequest) {
     { apiVersion: 'v1beta' },
   );
 
+  // ユーザー入力はシステムプロンプトと別パートに分けてプロンプトインジェクションを抑制
+  const parts =
+    body.type === 'audio'
+      ? [
+          { text: SYSTEM_PROMPT },
+          { inlineData: { mimeType: body.mimeType, data: body.audioBase64 } },
+        ]
+      : [
+          { text: SYSTEM_PROMPT },
+          { text: `\n\n入力内容：\n${body.text}` },
+        ];
+
   try {
-    // ユーザー入力はシステムプロンプトと別パートに分けてプロンプトインジェクションを抑制
-    const parts =
-      body.type === 'audio'
-        ? [
-            { text: SYSTEM_PROMPT },
-            { inlineData: { mimeType: body.mimeType, data: body.audioBase64 } },
-          ]
-        : [
-            { text: SYSTEM_PROMPT },
-            { text: `\n\n入力内容：\n${body.text}` },
-          ];
+    const streamResult = await model.generateContentStream(parts);
 
-    const result = await model.generateContent(parts);
-    const responseText = result.response.text().trim();
+    const encoder = new TextEncoder();
+    const readable = new ReadableStream<Uint8Array>({
+      async start(controller) {
+        try {
+          for await (const chunk of streamResult.stream) {
+            const text = chunk.text();
+            if (text) controller.enqueue(encoder.encode(text));
+          }
+          controller.close();
+        } catch (err) {
+          controller.error(err);
+        }
+      },
+    });
 
-    // まず直接パース、失敗時は ```json ``` ラップを取り除いて再試行
-    const jsonText = (() => {
-      try {
-        JSON.parse(responseText);
-        return responseText;
-      } catch {
-        const match = responseText.match(/\{[\s\S]*\}/);
-        return match?.[0] ?? null;
-      }
-    })();
-
-    if (!jsonText) {
-      return NextResponse.json({ error: 'AI response format error' }, { status: 502 });
-    }
-
-    // Zod でレスポンス形式を検証
-    const validated = GeminiResponseSchema.safeParse(JSON.parse(jsonText));
-    if (!validated.success) {
-      return NextResponse.json({ error: 'AI response format error' }, { status: 502 });
-    }
-
-    return NextResponse.json(validated.data);
+    return new Response(readable, {
+      headers: {
+        'Content-Type': 'text/plain; charset=utf-8',
+        'Cache-Control': 'no-cache',
+        'X-Content-Type-Options': 'nosniff',
+      },
+    });
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Unknown error';
     return NextResponse.json({ error: `AI error: ${message}` }, { status: 502 });

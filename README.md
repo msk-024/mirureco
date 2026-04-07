@@ -13,13 +13,16 @@
 | 機能 | 説明 |
 |---|---|
 | 🎙 音声入力 | マイクボタン 1 タップで録音開始。停止で自動解析 |
-| ⌨ テキスト入力 | 音声と対等なタブ UI。「整理する」で同じ AI 処理 |
+| ⌨ テキスト入力 | タブ切り替えで音声と対等なUI。1000字制限・残り文字カウント付き |
 | 📋 SBAR 自動生成 | S（状況）/ B（背景）/ A（評価）/ R（提案）に医療的定義で構造化 |
+| ⚡ ストリーミング表示 | AI の回答を待つ間、テキストがリアルタイムで流れ始める（体感速度が大幅向上） |
+| 🛑 解析キャンセル | 「中止」ボタンでいつでも解析を中断できる |
 | 📝 1 文要約 | そのまま読み上げられる申し送り文を自動生成 |
 | 📋 コピーボタン | SBAR 項目ごと・全文・1 文それぞれをワンタップでコピー |
 | 🔒 自動匿名化 | 固有名詞を A 氏 / B 氏に自動置換（音声・テキスト両対応） |
 | 📶 オフライン保存 | テキスト入力を端末に一時保存、電波復帰時に自動解析 |
-| 🕐 履歴（最新 20 件） | タップで展開・コピー・削除可能 |
+| 🕐 履歴（最新 20 件） | 専用の履歴タブ。タップで展開・コピー・削除可能 |
+| 🗂 ボトムナビゲーション | 録音 / 履歴 / 設定 の 3 タブ。ネイティブアプリ感覚で操作 |
 
 ---
 
@@ -28,9 +31,9 @@
 | 項目 | 内容 |
 |---|---|
 | フロントエンド | Next.js 14（App Router） + TypeScript 5 |
-| AI エンジン | Google Gemini 3 Flash Preview |
+| AI エンジン | Google Gemini 3 Flash Preview（ストリーミング対応） |
 | ローカル DB | Dexie.js 4（IndexedDB） |
-| バリデーション | Zod（API リクエスト・レスポンスのスキーマ検証） |
+| バリデーション | Zod（API リクエストのスキーマ検証） |
 | スタイル | Tailwind CSS |
 | デプロイ | Vercel（PWA 対応） |
 
@@ -78,15 +81,22 @@ GEMINI_API_KEY=your_api_key_here
 ```
 mirureco/
 ├── app/
-│   ├── page.tsx              # メイン画面（音声・テキスト入力、SBAR 結果表示）
-│   ├── history/page.tsx      # 履歴一覧画面
-│   └── api/analyze/route.ts  # Gemini API エンドポイント（Zod バリデーション）
+│   ├── layout.tsx              # ルートレイアウト（BottomNav・PWA viewport）
+│   ├── globals.css             # グローバルスタイル・safe-area・アニメーション
+│   ├── page.tsx                # 録音画面（音声/テキスト入力・ストリーミング解析・ボトムシート）
+│   ├── history/
+│   │   └── page.tsx            # 履歴一覧画面
+│   ├── settings/
+│   │   └── page.tsx            # 設定画面（アプリ情報・バージョン）
+│   └── api/analyze/
+│       └── route.ts            # POST /api/analyze（Gemini ストリーミング）
 ├── components/
-│   ├── CopyButton.tsx        # コピーボタン（共有コンポーネント）
-│   └── ReportCard.tsx        # 履歴カード
+│   ├── BottomNav.tsx           # 固定ボトムナビゲーション（録音/履歴/設定）
+│   ├── CopyButton.tsx          # コピーボタン（HTTPS非対応環境フォールバック付き）
+│   └── ReportCard.tsx          # 履歴カード（展開・削除・SBAR表示）
 └── lib/
-    ├── db.ts                 # Dexie.js スキーマ・CRUD 操作
-    └── sbar.ts               # SBAR 定数・ユーティリティ（共有）
+    ├── db.ts                   # Dexie.js スキーマ・CRUD 操作
+    └── sbar.ts                 # SBAR 定数・ユーティリティ（全コンポーネント共有）
 ```
 
 ---

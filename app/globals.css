@@ -30,3 +30,22 @@ a,
 .pb-safe {
   padding-bottom: max(3rem, env(safe-area-inset-bottom));
 }
+
+/* ── Safe Area: ページ上部 ───────────────────────────── */
+.pt-safe {
+  padding-top: env(safe-area-inset-top);
+}
+
+/* ── ナースキャラクター: バウンスアニメーション ──────── */
+@keyframes bounce-slow {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(-6px); }
+}
+.animate-bounce-slow {
+  animation: bounce-slow 1.6s ease-in-out infinite;
+}
+
+/* ── リップルアニメーション遅延 ──────────────────────── */
+.animation-delay-150 {
+  animation-delay: 150ms;
+}

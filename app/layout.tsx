@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from 'next';
 import './globals.css';
+import { BottomNav } from '@/components/BottomNav';
 
 export const metadata: Metadata = {
   title: 'ミルレコ',
@@ -11,8 +12,7 @@ export const viewport: Viewport = {
   themeColor: '#FF8C00',
   width: 'device-width',
   initialScale: 1,
-  maximumScale: 1,
-  viewportFit: 'cover', // iPhone ノッチ・ホームバーの safe-area-inset を有効化
+  viewportFit: 'cover',
 };
 
 export default function RootLayout({
@@ -22,7 +22,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang="ja">
-      <body className="min-h-screen bg-[#F5F5DC] antialiased">{children}</body>
+      <body className="min-h-screen bg-[#F5F5DC] antialiased">
+        {children}
+        <BottomNav />
+      </body>
     </html>
   );
 }

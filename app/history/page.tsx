@@ -1,8 +1,6 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
-import { ArrowLeft } from 'lucide-react';
-import Link from 'next/link';
 import { getAllReports, deleteReport, type Report } from '@/lib/db';
 import { ReportCard } from '@/components/ReportCard';
 
@@ -10,7 +8,9 @@ export default function HistoryPage() {
   const [reports, setReports] = useState<Report[]>([]);
 
   useEffect(() => {
-    getAllReports().then(setReports);
+    getAllReports()
+      .then(setReports)
+      .catch(() => setReports([]));
   }, []);
 
   const handleDelete = useCallback(async (id: number) => {
@@ -19,17 +19,10 @@ export default function HistoryPage() {
   }, []);
 
   return (
-    <main className="min-h-screen bg-[#F5F5DC] px-4 py-6 flex flex-col items-center gap-5">
+    <main className="min-h-screen bg-[#F5F5DC] px-4 pt-6 pb-24 flex flex-col items-center gap-5">
 
-      <header className="w-full max-w-md flex items-center gap-3">
-        <Link
-          href="/"
-          className="flex items-center gap-1 text-sm text-[#FF8C00] font-medium hover:underline"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          戻る
-        </Link>
-        <h1 className="text-lg font-bold text-gray-700">
+      <header className="w-full max-w-md">
+        <h1 className="text-xl font-bold text-gray-700">
           申し送り履歴
           {reports.length > 0 && (
             <span className="ml-2 text-sm font-normal text-gray-400">
