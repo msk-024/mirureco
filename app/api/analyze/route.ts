@@ -6,6 +6,31 @@ import {
 } from '@google/generative-ai';
 import { z } from 'zod';
 
+// ---- IPレート制限（デモ保護用）----
+// サーバレスのコールドスタートでリセットされるが、デモ用途には十分
+
+const RATE_LIMIT_MAX = 5;      // 1IPあたりの最大リクエスト数
+const RATE_LIMIT_WINDOW = 60 * 60 * 1000; // ウィンドウ: 1時間（ms）
+
+const ipMap = new Map<string, { count: number; resetAt: number }>();
+
+function checkRateLimit(ip: string): { allowed: boolean; retryAfterSec: number } {
+  const now = Date.now();
+  const entry = ipMap.get(ip);
+
+  if (!entry || now > entry.resetAt) {
+    ipMap.set(ip, { count: 1, resetAt: now + RATE_LIMIT_WINDOW });
+    return { allowed: true, retryAfterSec: 0 };
+  }
+
+  if (entry.count >= RATE_LIMIT_MAX) {
+    return { allowed: false, retryAfterSec: Math.ceil((entry.resetAt - now) / 1000) };
+  }
+
+  entry.count += 1;
+  return { allowed: true, retryAfterSec: 0 };
+}
+
 // ---- Zod スキーマ定義 ----
 
 /** リクエストボディ: テキスト or 音声のいずれか（Discriminated Union） */
@@ -54,6 +79,22 @@ const SYSTEM_PROMPT = `あなたは医療・介護現場の申し送りを整理
 // ---- ハンドラー ----
 
 export async function POST(req: NextRequest) {
+  // IPレート制限チェック
+  const ip =
+    req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ??
+    req.headers.get('x-real-ip') ??
+    'unknown';
+  const { allowed, retryAfterSec } = checkRateLimit(ip);
+  if (!allowed) {
+    return NextResponse.json(
+      { error: `リクエスト上限に達しました。${Math.ceil(retryAfterSec / 60)}分後に再試行してください。` },
+      {
+        status: 429,
+        headers: { 'Retry-After': String(retryAfterSec) },
+      },
+    );
+  }
+
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {
     // API キーの存在を外部に漏らさない
