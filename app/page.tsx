@@ -102,6 +102,35 @@ function AppHeader() {
   );
 }
 
+// ---- 自動高さ調整テキストエリア ----
+function AutoResizeTextarea({
+  value,
+  onChange,
+  className,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  className?: string;
+}) {
+  const ref = useRef<HTMLTextAreaElement>(null);
+  useEffect(() => {
+    if (ref.current) {
+      ref.current.style.height = "auto";
+      ref.current.style.height = `${ref.current.scrollHeight}px`;
+    }
+  }, [value]);
+  return (
+    <textarea
+      ref={ref}
+      value={value}
+      rows={1}
+      onChange={(e) => onChange(e.target.value)}
+      className={className}
+      style={{ resize: "none", overflow: "hidden" }}
+    />
+  );
+}
+
 // ---- ボトムシート（解析中・結果表示）----
 function ResultSheet({
   isOpen,
@@ -119,9 +148,20 @@ function ResultSheet({
   onCancel: () => void;
 }) {
   const [sbarExpanded, setSbarExpanded] = useState(false);
+  const [editedSummary, setEditedSummary] = useState("");
+  const [editedSbar, setEditedSbar] = useState<SbarContent>({
+    S: "",
+    B: "",
+    A: "",
+    R: "",
+  });
 
   useEffect(() => {
-    if (result) setSbarExpanded(false);
+    if (result) {
+      setSbarExpanded(false);
+      setEditedSummary(result.shortSummary);
+      setEditedSbar({ ...result.sbar });
+    }
   }, [result]);
 
   return (
@@ -199,13 +239,18 @@ function ResultSheet({
             <div className="space-y-3">
               {/* 1文サマリー */}
               <div className="bg-orange-50 border border-orange-100 rounded-2xl p-4 space-y-2">
-                <p className="text-xs font-semibold text-[#FF8C00] uppercase tracking-wider">
-                  1文申し送り
-                </p>
-                <p className="text-sm text-gray-700 leading-relaxed">
-                  {result.shortSummary}
-                </p>
-                <CopyButton text={result.shortSummary} label="コピー" />
+                <div className="flex items-center justify-between">
+                  <p className="text-xs font-semibold text-[#FF8C00] uppercase tracking-wider">
+                    1文申し送り
+                  </p>
+                  <span className="text-xs text-gray-300">タップして編集</span>
+                </div>
+                <AutoResizeTextarea
+                  value={editedSummary}
+                  onChange={setEditedSummary}
+                  className="w-full text-sm text-gray-700 leading-relaxed bg-transparent focus:outline-none focus:bg-white/60 rounded-lg px-1 -mx-1 transition-colors"
+                />
+                <CopyButton text={editedSummary} label="コピー" />
               </div>
 
               {/* SBAR 展開パネル */}
@@ -217,11 +262,16 @@ function ResultSheet({
                   <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
                     SBAR詳細
                   </span>
-                  {sbarExpanded ? (
-                    <ChevronUp className="w-4 h-4 text-gray-400" />
-                  ) : (
-                    <ChevronDown className="w-4 h-4 text-gray-400" />
-                  )}
+                  <div className="flex items-center gap-2">
+                    {!sbarExpanded && (
+                      <span className="text-xs text-gray-300">タップして編集</span>
+                    )}
+                    {sbarExpanded ? (
+                      <ChevronUp className="w-4 h-4 text-gray-400" />
+                    ) : (
+                      <ChevronDown className="w-4 h-4 text-gray-400" />
+                    )}
+                  </div>
                 </button>
 
                 {sbarExpanded && (
@@ -237,16 +287,20 @@ function ResultSheet({
                           </span>
                         </div>
                         <div className="flex items-start gap-2">
-                          <p className="flex-1 text-sm text-gray-700 leading-relaxed">
-                            {result.sbar[key]}
-                          </p>
-                          <CopyButton text={result.sbar[key]} label="コピー" />
+                          <AutoResizeTextarea
+                            value={editedSbar[key]}
+                            onChange={(v) =>
+                              setEditedSbar((prev) => ({ ...prev, [key]: v }))
+                            }
+                            className="flex-1 text-sm text-gray-700 leading-relaxed bg-transparent focus:outline-none focus:bg-gray-50 rounded-lg px-1 -mx-1 transition-colors"
+                          />
+                          <CopyButton text={editedSbar[key]} label="コピー" />
                         </div>
                       </div>
                     ))}
                     <div className="pt-2 border-t border-gray-100">
                       <CopyButton
-                        text={sbarToText(result.sbar)}
+                        text={sbarToText(editedSbar)}
                         label="全文コピー"
                       />
                     </div>
