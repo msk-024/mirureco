@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from 'next';
-import './globals.css';
+import "./globals.css";
 import { BottomNav } from '@/components/BottomNav';
 
 export const metadata: Metadata = {

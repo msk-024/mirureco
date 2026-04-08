@@ -1,6 +1,10 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import Image from "next/image";
 import {
   Mic,
   Loader2,
@@ -22,6 +26,15 @@ import {
 } from "@/lib/db";
 import { SBAR_KEYS, SBAR_LABELS, sbarToText } from "@/lib/sbar";
 import { CopyButton } from "@/components/CopyButton";
+
+// ---- フォームスキーマ ----
+const TextInputSchema = z.object({
+  text: z
+    .string()
+    .min(1, "入力してください")
+    .max(1000, "1000文字以内で入力してください"),
+});
+type TextInputValues = z.infer<typeof TextInputSchema>;
 
 // ---- 型 ----
 type AppState = "idle" | "recording" | "analyzing" | "error";
@@ -77,7 +90,14 @@ function NurseCharacter({ animate }: { animate: boolean }) {
     <div
       className={`relative select-none ${animate ? "animate-bounce-slow" : ""}`}
     >
-      <div className="text-7xl leading-none">👩‍⚕️</div>
+      <Image
+        src="/rdesign_18249.png"
+        alt="ナースキャラクター"
+        width={96}
+        height={96}
+        className="object-contain"
+        priority
+      />
       {animate && (
         <div className="absolute -top-1 -right-2 text-yellow-400 text-xl animate-ping-once">
           ✨
@@ -328,7 +348,18 @@ function ResultSheet({
 export default function HomePage() {
   const [appState, setAppState] = useState<AppState>("idle");
   const [inputMode, setInputMode] = useState<InputMode>("voice");
-  const [inputText, setInputText] = useState("");
+
+  const {
+    register,
+    handleSubmit,
+    watch,
+    reset: resetForm,
+    formState: { errors: formErrors },
+  } = useForm<TextInputValues>({
+    resolver: zodResolver(TextInputSchema),
+    defaultValues: { text: "" },
+  });
+  const watchedText = watch("text");
   const [result, setResult]           = useState<AnalysisResult | null>(null);
   const [streamingText, setStreamingText] = useState('');
   const [pendingCount, setPendingCount] = useState(0);
@@ -454,7 +485,6 @@ export default function HomePage() {
       }
       await addPendingReport(source.text);
       setPendingCount((await getPendingReports()).length);
-      setInputText("");
       setAppState("idle");
       setSyncNotice("通信待ちで保存しました。電波復帰時に解析されます");
       setTimeout(() => setSyncNotice(""), 5000);
@@ -508,7 +538,6 @@ export default function HomePage() {
       await addReport(data.sbar, data.shortSummary);
       setStreamingText("");
       setResult(data);
-      setInputText("");
       setAppState("idle");
     } catch (e) {
       if (e instanceof DOMException && e.name === "AbortError") return;
@@ -569,21 +598,24 @@ export default function HomePage() {
 
   const handleReset = useCallback(() => {
     setResult(null);
-    setInputText("");
+    resetForm();
     setErrorMsg("");
     setAppState("idle");
-  }, []);
+  }, [resetForm]);
 
-  const handleAnalyzeText = useCallback(() => {
-    if (!inputText.trim()) return;
-    setResult(null);
-    analyze({ type: "text", text: inputText.trim() });
-  }, [inputText, analyze]);
+  const handleAnalyzeText = useCallback(
+    (values: TextInputValues) => {
+      setResult(null);
+      analyze({ type: "text", text: values.text.trim() });
+      resetForm();
+    },
+    [analyze, resetForm],
+  );
 
   const isRecording = appState === "recording";
   const isAnalyzing = appState === "analyzing";
   const sheetOpen = isAnalyzing || !!result;
-  const canAnalyze = appState === "idle" && inputText.trim().length > 0;
+  const canAnalyze = appState === "idle" && watchedText.trim().length > 0;
 
   return (
     <div className="min-h-screen bg-[#F5F5DC] flex flex-col">
@@ -664,20 +696,36 @@ export default function HomePage() {
 
         {/* テキスト入力エリア（テキストモード時） */}
         {inputMode === "text" && !isRecording && !isAnalyzing && !result && (
-          <div className="flex-1 flex flex-col w-full max-w-md pt-8 gap-3">
+          <form
+            onSubmit={handleSubmit(handleAnalyzeText)}
+            className="flex-1 flex flex-col w-full max-w-md pt-8 gap-3"
+            noValidate
+          >
             <div className="relative">
               <textarea
-                value={inputText}
-                onChange={(e) => setInputText(e.target.value)}
+                {...register("text")}
                 placeholder="例：患者A氏の血圧が150/90に上昇。頭痛を訴えています。"
                 rows={6}
-                maxLength={1000}
-                className="w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-base text-gray-800 placeholder-gray-300 focus:outline-none focus:border-[#FF8C00] resize-none"
+                className={`w-full rounded-xl border bg-white px-4 py-3 text-base text-gray-800 placeholder-gray-300 focus:outline-none resize-none transition-colors ${
+                  formErrors.text
+                    ? "border-red-300 focus:border-red-400"
+                    : "border-gray-200 focus:border-[#FF8C00]"
+                }`}
               />
-              <span className={`absolute bottom-2 right-3 text-xs ${inputText.length >= 900 ? 'text-orange-400' : 'text-gray-300'}`}>
-                {inputText.length}/1000
+              <span
+                className={`absolute bottom-2 right-3 text-xs ${
+                  watchedText.length >= 900 ? "text-orange-400" : "text-gray-300"
+                }`}
+              >
+                {watchedText.length}/1000
               </span>
             </div>
+            {formErrors.text && (
+              <p className="text-red-500 text-sm flex items-center gap-1.5">
+                <AlertCircle className="w-4 h-4" />
+                {formErrors.text.message}
+              </p>
+            )}
             {appState === "error" && (
               <p className="text-red-500 text-sm flex items-center gap-1.5">
                 <AlertCircle className="w-4 h-4" />
@@ -685,13 +733,13 @@ export default function HomePage() {
               </p>
             )}
             <button
-              onClick={handleAnalyzeText}
+              type="submit"
               disabled={!canAnalyze}
               className="w-full h-12 rounded-xl font-semibold text-sm bg-[#FF8C00] text-white hover:bg-[#E07800] disabled:opacity-40 disabled:cursor-not-allowed active:bg-[#D07000] transition-colors shadow"
             >
               SBARに変換する
             </button>
-          </div>
+          </form>
         )}
 
         {/* 音声入力エリア */}
