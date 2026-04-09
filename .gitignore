@@ -13,7 +13,16 @@ node_modules/
 # build
 dist/
 
+# TypeScript
+tsconfig.tsbuildinfo
+*.tsbuildinfo
+
 # misc
 .DS_Store
+Thumbs.db
 *.log
 npm-debug.log*
+
+# editor
+.vscode/
+.idea/

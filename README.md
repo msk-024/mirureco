@@ -15,6 +15,7 @@
 | 🎙 音声入力 | マイクボタン 1 タップで録音開始。停止で自動解析 |
 | ⌨ テキスト入力 | タブ切り替えで音声と対等なUI。1000字制限・残り文字カウント付き |
 | 📋 SBAR 自動生成 | S（状況）/ B（背景）/ A（評価）/ R（提案）に医療的定義で構造化 |
+| ✏️ 解析結果の編集 | 1文サマリー・SBAR各項目をタップしてその場で修正可能。編集後のテキストをそのままコピー |
 | ⚡ ストリーミング表示 | AI の回答を待つ間、テキストがリアルタイムで流れ始める（体感速度が大幅向上） |
 | 🛑 解析キャンセル | 「中止」ボタンでいつでも解析を中断できる |
 | 📝 1 文要約 | そのまま読み上げられる申し送り文を自動生成 |
@@ -32,8 +33,9 @@
 |---|---|
 | フロントエンド | Next.js 14（App Router） + TypeScript 5 |
 | AI エンジン | Google Gemini 3 Flash Preview（ストリーミング対応） |
+| フォーム | react-hook-form + @hookform/resolvers |
 | ローカル DB | Dexie.js 4（IndexedDB） |
-| バリデーション | Zod（API リクエストのスキーマ検証） |
+| バリデーション | Zod（API リクエスト・フォームのスキーマ検証） |
 | スタイル | Tailwind CSS |
 | デプロイ | Vercel（PWA 対応） |
 
@@ -83,20 +85,26 @@ mirureco/
 ├── app/
 │   ├── layout.tsx              # ルートレイアウト（BottomNav・PWA viewport）
 │   ├── globals.css             # グローバルスタイル・safe-area・アニメーション
+│   ├── icon.tsx                # ファビコン（32×32）動的生成（next/og）
+│   ├── apple-icon.tsx          # Apple Touch Icon（180×180）動的生成
 │   ├── page.tsx                # 録音画面（音声/テキスト入力・ストリーミング解析・ボトムシート）
 │   ├── history/
 │   │   └── page.tsx            # 履歴一覧画面
 │   ├── settings/
 │   │   └── page.tsx            # 設定画面（アプリ情報・バージョン）
 │   └── api/analyze/
-│       └── route.ts            # POST /api/analyze（Gemini ストリーミング）
+│       └── route.ts            # POST /api/analyze（Gemini ストリーミング・レート制限）
 ├── components/
 │   ├── BottomNav.tsx           # 固定ボトムナビゲーション（録音/履歴/設定）
 │   ├── CopyButton.tsx          # コピーボタン（HTTPS非対応環境フォールバック付き）
 │   └── ReportCard.tsx          # 履歴カード（展開・削除・SBAR表示）
-└── lib/
-    ├── db.ts                   # Dexie.js スキーマ・CRUD 操作
-    └── sbar.ts                 # SBAR 定数・ユーティリティ（全コンポーネント共有）
+├── lib/
+│   ├── db.ts                   # Dexie.js スキーマ・CRUD 操作
+│   └── sbar.ts                 # SBAR 定数・ユーティリティ（全コンポーネント共有）
+├── public/
+│   ├── manifest.json           # PWAマニフェスト（アイコン・テーマカラー）
+│   └── rdesign_18249.png       # ナースキャラクター画像
+└── global.d.ts                 # CSS モジュールの型宣言
 ```
 
 ---
