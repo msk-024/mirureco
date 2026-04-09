@@ -6,6 +6,18 @@
 医療・介護現場のスタッフが「申し送り」を素早く・正確・安全に残すための Web アプリです。  
 音声またはテキストで入力するだけで、AI が自動的に **SBAR 形式**に整理し、そのまま読み上げられる 1 文要約も生成します。
 
+
+
+**デモ：[こちらからお試しできます](https://mirureco.vercel.app/)** 
+
+
+## 🔗 Links
+- [📘 Zenn（開発背景・UI/UX解説）](https://zenn.dev/moch1/articles/e1efabbc67eddf)
+- [🧠 Qiita（技術解説）](https://qiita.com/amocode024/items/900a6a3fdcab58c55852)
+
+---
+
+
 ---
 
 ## 主な機能
