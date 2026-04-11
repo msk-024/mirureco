@@ -8,7 +8,9 @@
 
 
 
-**デモ：[こちらからお試しできます](https://mirureco.vercel.app/)** 
+**デモ：[こちらからお試しできます](https://mirureco.vercel.app/)**
+
+> デモは Google Gemini の無料枠を使用しています。1つのIPアドレスから1時間に5回まで利用できます。上限に達した場合は時間をおいてお試しください。
 
 
 ## 🔗 Links
