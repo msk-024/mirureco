@@ -91,7 +91,7 @@ function NurseCharacter({ animate }: { animate: boolean }) {
       className={`relative select-none ${animate ? "animate-bounce-slow" : ""}`}
     >
       <Image
-        src="/rdesign_18249.png"
+        src="/nurse.svg"
         alt="ナースキャラクター"
         width={96}
         height={96}
@@ -671,25 +671,37 @@ export default function HomePage() {
               role="tab"
               aria-selected={inputMode === "voice"}
               onClick={() => setInputMode("voice")}
-              className={`flex-1 py-2.5 font-medium transition-colors ${
+              className={`flex-1 py-2.5 font-medium transition-colors flex items-center justify-center gap-1.5 ${
                 inputMode === "voice"
                   ? "bg-[#FF8C00] text-white"
                   : "text-gray-500"
               }`}
             >
-              🎙 音声
+              <Image
+                src={inputMode === "voice" ? "/voicemail-white.svg" : "/voicemail-main.svg"}
+                alt="音声入力"
+                width={20}
+                height={20}
+              />
+              音声
             </button>
             <button
               role="tab"
               aria-selected={inputMode === "text"}
               onClick={() => setInputMode("text")}
-              className={`flex-1 py-2.5 font-medium transition-colors ${
+              className={`flex-1 py-2.5 font-medium transition-colors flex items-center justify-center gap-1.5 ${
                 inputMode === "text"
                   ? "bg-[#FF8C00] text-white"
                   : "text-gray-500"
               }`}
             >
-              ⌨ テキスト
+              <Image
+                src={inputMode === "text" ? "/keyboard-white.svg" : "/keyboard-main.svg"}
+                alt="テキスト入力"
+                width={20}
+                height={20}
+              />
+              テキスト
             </button>
           </div>
         )}
