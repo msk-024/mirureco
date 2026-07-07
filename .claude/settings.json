@@ -1,0 +1,21 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(Get-ChildItem C:\\\\sB\\\\mirureco\\\\src\\\\app -Recurse -File | Where-Object { $_.Name -match 'layout|icon|favicon|manifest|apple|opengraph|metadata' } | Select-Object FullName)",
+      "Bash(rm -f /c/sB/mirureco/app/icon.tsx /c/sB/mirureco/app/apple-icon.tsx && echo \"removed icon.tsx and apple-icon.tsx\")",
+      "PowerShell(cd C:\\\\sB\\\\mirureco; npx tsc --noEmit 2>&1 | Select-Object -First 30; Write-Host \"exit: $LASTEXITCODE\")",
+      "PowerShell(cd C:\\\\sB\\\\mirureco; npm run lint 2>&1 | Select-Object -Last 20; Write-Host \"exit: $LASTEXITCODE\")",
+      "PowerShell(cd C:\\\\sB\\\\mirureco; npm run build 2>&1 | Select-Object -Last 40; Write-Host \"exit: $LASTEXITCODE\")",
+      "PowerShell(cd C:\\\\sB\\\\mirureco; Write-Host \"--- eslint関連ファイル ---\"; Get-ChildItem -Force | Where-Object { $_.Name -match 'eslint' } | Select-Object Name; Write-Host \"--- installed versions ---\"; npm ls eslint eslint-config-next 2>&1 | Select-Object -First 10)",
+      "PowerShell(cd C:\\\\sB\\\\mirureco; npm install --save-dev eslint@^8 eslint-config-next@14.2.35 2>&1 | Select-Object -Last 15; Write-Host \"exit: $LASTEXITCODE\")",
+      "PowerShell(cd C:\\\\sB\\\\mirureco; npm run lint 2>&1 | Select-Object -Last 40; Write-Host \"exit: $LASTEXITCODE\")",
+      "Read(//c/Users/onishi/.claude/**)",
+      "PowerShell(cd C:\\\\sB\\\\mirureco; Write-Host \"=== typecheck ===\"; npm run typecheck 2>&1 | Select-Object -Last 15; Write-Host \"typecheck exit: $LASTEXITCODE\"; Write-Host \"=== lint \\(next/typescript\\) ===\"; npm run lint 2>&1 | Select-Object -Last 40; Write-Host \"lint exit: $LASTEXITCODE\")",
+      "PowerShell(cd C:\\\\sB\\\\mirureco; git push origin main 2>&1 | Select-Object -Last 10; Write-Host \"push exit: $LASTEXITCODE\")"
+    ],
+    "additionalDirectories": [
+      "C:\\sB\\mirureco\\app",
+      "C:\\Users\\onishi\\.claude"
+    ]
+  }
+}
