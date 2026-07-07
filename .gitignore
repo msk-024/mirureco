@@ -26,3 +26,9 @@ npm-debug.log*
 # editor
 .vscode/
 .idea/
+
+# markdown docs (README.md 以外は Git 管理しない)
+*.md
+!README.md
+
+
