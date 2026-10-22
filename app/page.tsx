@@ -115,8 +115,12 @@ function AppHeader() {
         <Mic className="w-5 h-5 text-[#FF8C00]" />
       </div>
       <div>
-        <p className="text-sm font-bold text-gray-700 leading-tight">ミルレコ</p>
-        <p className="text-xs text-gray-400 leading-tight">申し送りを10秒で整理</p>
+        <p className="text-sm font-bold text-gray-700 leading-tight">
+          ミルレコ
+        </p>
+        <p className="text-xs text-gray-400 leading-tight">
+          申し送りを10秒で整理
+        </p>
       </div>
     </header>
   );
@@ -176,13 +180,16 @@ function ResultSheet({
     R: "",
   });
 
-  useEffect(() => {
+  // resultが変わった瞬間に編集用stateをリセットする（Effect不使用のレンダー中調整パターン）
+  const [prevResult, setPrevResult] = useState(result);
+  if (result !== prevResult) {
+    setPrevResult(result);
     if (result) {
       setSbarExpanded(false);
       setEditedSummary(result.shortSummary);
       setEditedSbar({ ...result.sbar });
     }
-  }, [result]);
+  }
 
   return (
     <>
@@ -247,7 +254,10 @@ function ResultSheet({
               ) : (
                 <div className="space-y-2 animate-pulse">
                   {["w-3/4", "w-1/2", "w-5/6"].map((w, i) => (
-                    <div key={i} className={`h-3 bg-gray-200 rounded-full ${w}`} />
+                    <div
+                      key={i}
+                      className={`h-3 bg-gray-200 rounded-full ${w}`}
+                    />
                   ))}
                 </div>
               )}
@@ -284,7 +294,9 @@ function ResultSheet({
                   </span>
                   <div className="flex items-center gap-2">
                     {!sbarExpanded && (
-                      <span className="text-xs text-gray-300">タップして編集</span>
+                      <span className="text-xs text-gray-300">
+                        タップして編集
+                      </span>
                     )}
                     {sbarExpanded ? (
                       <ChevronUp className="w-4 h-4 text-gray-400" />
@@ -360,8 +372,8 @@ export default function HomePage() {
     defaultValues: { text: "" },
   });
   const watchedText = watch("text");
-  const [result, setResult]           = useState<AnalysisResult | null>(null);
-  const [streamingText, setStreamingText] = useState('');
+  const [result, setResult] = useState<AnalysisResult | null>(null);
+  const [streamingText, setStreamingText] = useState("");
   const [pendingCount, setPendingCount] = useState(0);
   const [errorMsg, setErrorMsg] = useState("");
   const [isOnline, setIsOnline] = useState(true);
@@ -525,13 +537,23 @@ export default function HomePage() {
 
       // 完了後に JSON パースして構造化表示に切り替え
       const jsonText = (() => {
-        try { JSON.parse(accumulated); return accumulated; }
-        catch { return accumulated.match(/\{[\s\S]*\}/)?.[0] ?? null; }
+        try {
+          JSON.parse(accumulated);
+          return accumulated;
+        } catch {
+          return accumulated.match(/\{[\s\S]*\}/)?.[0] ?? null;
+        }
       })();
       if (!jsonText) throw new Error("AI response format error");
 
       const data = JSON.parse(jsonText) as AnalysisResult;
-      if (!data.sbar?.S || !data.sbar?.B || !data.sbar?.A || !data.sbar?.R || !data.shortSummary) {
+      if (
+        !data.sbar?.S ||
+        !data.sbar?.B ||
+        !data.sbar?.A ||
+        !data.sbar?.R ||
+        !data.shortSummary
+      ) {
         throw new Error("AI response incomplete");
       }
 
@@ -678,7 +700,11 @@ export default function HomePage() {
               }`}
             >
               <Image
-                src={inputMode === "voice" ? "/voicemail-white.svg" : "/voicemail-main.svg"}
+                src={
+                  inputMode === "voice"
+                    ? "/voicemail-white.svg"
+                    : "/voicemail-main.svg"
+                }
                 alt="音声入力"
                 width={20}
                 height={20}
@@ -696,7 +722,11 @@ export default function HomePage() {
               }`}
             >
               <Image
-                src={inputMode === "text" ? "/keyboard-white.svg" : "/keyboard-main.svg"}
+                src={
+                  inputMode === "text"
+                    ? "/keyboard-white.svg"
+                    : "/keyboard-main.svg"
+                }
                 alt="テキスト入力"
                 width={20}
                 height={20}
@@ -726,7 +756,9 @@ export default function HomePage() {
               />
               <span
                 className={`absolute bottom-2 right-3 text-xs ${
-                  watchedText.length >= 900 ? "text-orange-400" : "text-gray-300"
+                  watchedText.length >= 900
+                    ? "text-orange-400"
+                    : "text-gray-300"
                 }`}
               >
                 {watchedText.length}/1000
